@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:html="http://www.w3.org/1999/xhtml" lang="ja" width="900" height="1200" viewBox="0 0 900 1200" role="img" aria-labelledby="title description">
+  <title id="title">FORM / LIFE 暮らしの実験展ポスター</title>
+  <desc id="description">幾何学模様と、HTMLによる大きな見出し、縦書きのコピー、回転したラベルを組み合わせた架空の展覧会ポスター。</desc>
+  <defs>
+    <clipPath id="artwork_clip"><rect x="48" y="456" width="706" height="467" rx="230" /></clipPath>
+  </defs>
+  <style>
+    text { font-family: 'Noto Sans CJK JP', 'Noto Sans JP', 'Yu Gothic', 'Hiragino Sans', 'Meiryo', sans-serif; fill: #202b36; }
+    .slot { fill: none; }
+  </style>
+  <rect width="900" height="1200" fill="#f2eee4" />
+  <path d="M 56 51 H 90 M 73 34 V 68" stroke="#202b36" stroke-width="2" />
+  <text x="108" y="58" font-size="16" font-weight="700" letter-spacing="3">FORM / LIFE</text>
+  <text x="753" y="58" text-anchor="end" font-size="12" letter-spacing="2">EXHIBITION SERIES</text>
+  <path d="M 782 36 V 1136" stroke="#bdbeb0" />
+
+
+  <rect id="title_box" class="slot" x="52" y="112" width="698" height="225" />
+  <foreignObject x="52" y="112" width="698" height="225" class="svgrb-field" data-svgrb-target="title_box" data-svgrb-kind="text" data-svgrb-role="field" data-svgrb-value-path="title"><html:div class="svgrb-container" data-svgrb-role="container" style="width:100%;height:100%;box-sizing:border-box;font-family:&quot;Noto Sans CJK JP&quot;, &quot;Noto Sans JP&quot;, &quot;Yu Gothic&quot;, &quot;Hiragino Sans&quot;, &quot;Meiryo&quot;, sans-serif;font-size:96px;line-height:1.13;color:#202b36;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:900;letter-spacing:-4px;">余白を、
+あそぶ。</html:div></foreignObject><rect id="edition_box" class="slot" x="60" y="350" width="660" height="28" />
+  <foreignObject x="60" y="350" width="660" height="28" class="svgrb-field" data-svgrb-target="edition_box" data-svgrb-kind="text" data-svgrb-role="field" data-svgrb-value-path="edition"><html:div class="svgrb-container" data-svgrb-role="container" style="width:100%;height:100%;box-sizing:border-box;font-family:&quot;Noto Sans CJK JP&quot;, &quot;Noto Sans JP&quot;, &quot;Yu Gothic&quot;, &quot;Hiragino Sans&quot;, &quot;Meiryo&quot;, sans-serif;font-size:15px;line-height:1.8;color:#202b36;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:700;letter-spacing:2px;">暮らしの実験展  vol. 01　/　2026</html:div></foreignObject><rect id="dates_box" class="slot" x="55" y="388" width="698" height="66" />
+  <foreignObject x="55" y="388" width="698" height="66" class="svgrb-field" data-svgrb-target="dates_box" data-svgrb-kind="text" data-svgrb-role="field" data-svgrb-value-path="dates"><html:div class="svgrb-container" data-svgrb-role="container" style="width:100%;height:100%;box-sizing:border-box;font-family:&quot;Noto Sans CJK JP&quot;, &quot;Noto Sans JP&quot;, &quot;Yu Gothic&quot;, &quot;Hiragino Sans&quot;, &quot;Meiryo&quot;, sans-serif;font-size:58px;line-height:1.1;color:#202b36;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:700;letter-spacing:-2px;font-variant-numeric:tabular-nums;">10.24 — 11.08</html:div></foreignObject><rect id="vertical_copy_box" class="slot" x="804" y="120" width="47" height="730" />
+
+  <foreignObject x="804" y="120" width="47" height="730" class="svgrb-field" data-svgrb-target="vertical_copy_box" data-svgrb-kind="text" data-svgrb-role="field" data-svgrb-value-path="vertical_copy"><html:div class="svgrb-container" data-svgrb-role="container" style="width:100%;height:100%;box-sizing:border-box;font-family:&quot;Noto Sans CJK JP&quot;, &quot;Noto Sans JP&quot;, &quot;Yu Gothic&quot;, &quot;Hiragino Sans&quot;, &quot;Meiryo&quot;, sans-serif;font-size:23px;line-height:1.7;color:#202b36;white-space:pre-wrap;overflow-wrap:anywhere;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:5px;">何もないところから、日常が動きだす。</html:div></foreignObject><g clip-path="url(#artwork_clip)">
+    <rect x="48" y="456" width="706" height="467" fill="#db6249" />
+    <circle cx="564" cy="570" r="217" fill="#ecc7ab" />
+    <path d="M 140 990 V 681 A 163 163 0 0 1 466 681 V 990" fill="#253945" />
+    <path d="M 202 990 V 685 A 101 101 0 0 1 404 685 V 990" fill="#f2eee4" />
+    <g fill="none" stroke="#253945" stroke-width="2">
+      <path d="M 427 448 C 762 494 367 720 760 823" />
+      <path d="M 449 438 C 784 484 389 710 782 813" />
+      <path d="M 471 428 C 806 474 411 700 804 803" />
+      <path d="M 493 418 C 828 464 433 690 826 793" />
+      <path d="M 515 408 C 850 454 455 680 848 783" />
+      <path d="M 537 398 C 872 444 477 670 870 773" />
+    </g>
+    <circle cx="572" cy="803" r="56" fill="#c5d277" />
+  </g>
+
+  <g transform="translate(543 804) rotate(-12)">
+    <rect id="badge_box" x="0" y="0" width="224" height="73" rx="3" fill="#c5d277" style="fill:#c5d277;" />
+  <foreignObject x="0" y="0" width="224" height="73" class="svgrb-field" data-svgrb-target="badge_box" data-svgrb-kind="text" data-svgrb-role="field" data-svgrb-value-path="badge.label"><html:div class="svgrb-container" data-svgrb-role="container" style="width:100%;height:100%;box-sizing:border-box;font-family:&quot;Noto Sans CJK JP&quot;, &quot;Noto Sans JP&quot;, &quot;Yu Gothic&quot;, &quot;Hiragino Sans&quot;, &quot;Meiryo&quot;, sans-serif;font-size:20px;line-height:1.4;color:#202b36;white-space:pre-wrap;overflow-wrap:anywhere;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;">見て、さわって。
+入場無料</html:div></foreignObject></g>
+  <text x="60" y="950" font-size="11" letter-spacing="2">OBJECTS / SPACE / EVERYDAY LIFE</text>
+  <rect id="description_box" class="slot" x="60" y="981" width="467" height="113" />
+  <foreignObject x="60" y="981" width="467" height="113" class="svgrb-field" data-svgrb-target="description_box" data-svgrb-kind="text" data-svgrb-role="field" data-svgrb-value-path="description"><html:div class="svgrb-container" data-svgrb-role="container" style="width:100%;height:100%;box-sizing:border-box;font-family:&quot;Noto Sans CJK JP&quot;, &quot;Noto Sans JP&quot;, &quot;Yu Gothic&quot;, &quot;Hiragino Sans&quot;, &quot;Meiryo&quot;, sans-serif;font-size:17px;line-height:1.8;color:#202b36;white-space:pre-wrap;overflow-wrap:anywhere;">椅子ひとつ、紙一枚、光のひとすじ。
+いつもの道具と空間のあいだにある「余白」を、
+12組のつくり手と一緒に見つめ直す展覧会。</html:div></foreignObject><text x="579" y="971" font-size="10" letter-spacing="2">VENUE &amp; HOURS</text>
+  <rect id="venue_box" class="slot" x="579" y="985" width="180" height="117" />
+  <foreignObject x="579" y="985" width="180" height="117" class="svgrb-field" data-svgrb-target="venue_box" data-svgrb-kind="text" data-svgrb-role="field" data-svgrb-value-path="venue"><html:div class="svgrb-container" data-svgrb-role="container" style="width:100%;height:100%;box-sizing:border-box;font-family:&quot;Noto Sans CJK JP&quot;, &quot;Noto Sans JP&quot;, &quot;Yu Gothic&quot;, &quot;Hiragino Sans&quot;, &quot;Meiryo&quot;, sans-serif;font-size:15px;line-height:1.85;color:#202b36;white-space:pre-wrap;overflow-wrap:anywhere;">港のギャラリー
+10:00–18:00
+最終日は17:00まで
+会期中無休</html:div></foreignObject><path d="M 60 1120 H 753" stroke="#202b36" />
+  <rect id="footer_box" class="slot" x="60" y="1137" width="698" height="31" />
+  <foreignObject x="60" y="1137" width="698" height="31" class="svgrb-field" data-svgrb-target="footer_box" data-svgrb-kind="text" data-svgrb-role="field" data-svgrb-value-path="footer"><html:div class="svgrb-container" data-svgrb-role="container" style="width:100%;height:100%;box-sizing:border-box;font-family:&quot;Noto Sans CJK JP&quot;, &quot;Noto Sans JP&quot;, &quot;Yu Gothic&quot;, &quot;Hiragino Sans&quot;, &quot;Meiryo&quot;, sans-serif;font-size:12px;line-height:1.8;color:#202b36;white-space:pre-wrap;overflow-wrap:anywhere;letter-spacing:1px;">主催：FORM / LIFE 実行委員会　　企画・会場はサンプルです。</html:div></foreignObject><text x="835" y="1100" font-size="12" letter-spacing="2" transform="rotate(-90 835 1100)">MAKE ROOM FOR WONDER.</text>
+</svg>

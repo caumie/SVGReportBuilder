@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" lang="ja" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title description">
+  <title id="title">ATLAS サービス構成と稼働状況</title>
+  <desc id="description">ブラウザーからAPI、データベース、非同期ワーカーへつながる構成図。各ノードに状態、説明、メトリクスを表示する架空のサービス。</desc>
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 H 0 V 28" fill="none" stroke="#263746" stroke-width="0.5"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="#7f9eae" stroke-width="1.5"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: 'Noto Sans CJK JP', 'Noto Sans JP', 'Yu Gothic', 'Hiragino Sans', 'Meiryo', sans-serif; fill: #b4c5d0; }
+    .small { font-size: 12px; letter-spacing: 1.5px; }
+    .slot { fill: none; }
+    .edge { fill: none; stroke: #7f9eae; stroke-width: 2; marker-end: url(#arrow); }
+  </style>
+  <rect width="1200" height="760" fill="#111e29"/>
+  <rect x="32" y="188" width="1136" height="468" fill="url(#grid)"/>
+  <path d="M 56 49 H 68 L 75 35 L 85 63 L 92 49 H 105" fill="none" stroke="#a8dfb4" stroke-width="3"/>
+  <text class="small" x="122" y="54">ATLAS / SERVICE TOPOLOGY</text>
+  <rect id="heading_box" class="slot" x="56" y="80" width="780" height="59"/>
+  <rect id="subtitle_box" class="slot" x="58" y="145" width="800" height="30"/>
+  <rect id="overall_box" x="930" y="89" width="214" height="43" rx="21.5" fill="#b9e5c5"/>
+
+<!-- 接続線は固定SVG。カードの高さを固定し、説明の改行はHTMLに任せる。 -->
+  <path class="edge" d="M 311 307 H 416"/>
+  <path class="edge" d="M 706 307 H 814"/>
+  <path class="edge" d="M 561 394 V 466"/>
+  <path class="edge" d="M 706 552 H 978 V 394" stroke-dasharray="6 6"/>
+  <text x="363" y="289" text-anchor="middle" font-size="12">HTTPS</text>
+  <text x="760" y="289" text-anchor="middle" font-size="12">SQL</text>
+  <text x="575" y="436" font-size="12">ENQUEUE</text>
+  <rect x="783" y="537" width="95" height="29" rx="6" fill="#111e29"/>
+  <text x="830" y="556" text-anchor="middle" font-size="12">ASYNC</text>
+
+  <g transform="translate(56 220)">
+    <rect id="node_0_panel_box" x="0" y="0" width="255" height="174" rx="14" fill="#1c303e" stroke="#456273"/>
+    <rect id="node_0_status_box" x="161" y="15" width="78" height="24" rx="12" fill="#b9e5c5"/>
+    <rect id="node_0_name_box" class="slot" x="20" y="46" width="215" height="32"/>
+    <rect id="node_0_description_box" class="slot" x="20" y="87" width="215" height="47"/>
+    <path d="M 20 140 H 235" stroke="#456273"/>
+    <rect id="node_0_metric_box" class="slot" x="20" y="146" width="215" height="23"/>
+  </g>
+  <g transform="translate(416 220)">
+    <rect id="node_1_panel_box" x="0" y="0" width="290" height="174" rx="14" fill="#1c303e" stroke="#456273"/>
+    <rect id="node_1_status_box" x="196" y="15" width="78" height="24" rx="12" fill="#b9e5c5"/>
+    <rect id="node_1_name_box" class="slot" x="20" y="46" width="250" height="32"/>
+    <rect id="node_1_description_box" class="slot" x="20" y="87" width="250" height="47"/>
+    <path d="M 20 140 H 270" stroke="#456273"/>
+    <rect id="node_1_metric_box" class="slot" x="20" y="146" width="250" height="23"/>
+  </g>
+  <g transform="translate(814 220)">
+    <rect id="node_2_panel_box" x="0" y="0" width="330" height="174" rx="14" fill="#1c303e" stroke="#456273"/>
+    <rect id="node_2_status_box" x="236" y="15" width="78" height="24" rx="12" fill="#b9e5c5"/>
+    <rect id="node_2_name_box" class="slot" x="20" y="46" width="290" height="32"/>
+    <rect id="node_2_description_box" class="slot" x="20" y="87" width="290" height="47"/>
+    <path d="M 20 140 H 310" stroke="#456273"/>
+    <rect id="node_2_metric_box" class="slot" x="20" y="146" width="290" height="23"/>
+  </g>
+  <g transform="translate(416 466)">
+    <rect id="node_3_panel_box" x="0" y="0" width="290" height="174" rx="14" fill="#1c303e" stroke="#456273"/>
+    <rect id="node_3_status_box" x="196" y="15" width="78" height="24" rx="12" fill="#b9e5c5"/>
+    <rect id="node_3_name_box" class="slot" x="20" y="46" width="250" height="32"/>
+    <rect id="node_3_description_box" class="slot" x="20" y="87" width="250" height="47"/>
+    <path d="M 20 140 H 270" stroke="#456273"/>
+    <rect id="node_3_metric_box" class="slot" x="20" y="146" width="250" height="23"/>
+  </g>
+
+  <text class="small" x="56" y="490">READING THE MAP</text>
+  <path d="M 56 521 H 95" stroke="#7f9eae" stroke-width="2"/>
+  <text x="108" y="526" font-size="13">同期リクエスト</text>
+  <path d="M 56 554 H 95" stroke="#7f9eae" stroke-width="2" stroke-dasharray="6 6"/>
+  <text x="108" y="559" font-size="13">バックグラウンド処理</text>
+  <text x="56" y="606" font-size="12">状態は色とラベルで表示</text>
+  <text class="small" x="830" y="602">ONE SYSTEM. FOUR ROLES.</text>
+  <text x="830" y="628" font-size="13">接続関係と状況を、ひとつの図に。</text>
+
+  <rect x="56" y="677" width="1088" height="55" rx="12" fill="#1c303e"/>
+  <rect id="summary_box" class="slot" x="74" y="686" width="1052" height="38"/>
+</svg>

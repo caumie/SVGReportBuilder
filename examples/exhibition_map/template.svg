@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" lang="ja" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title description">
+  <title id="title">OPEN STUDIO 展示会場マップ</title>
+  <desc id="description">4つの展示室と回遊ルート、各展示の紹介・混雑状況、本日のトークを案内する架空の会場マップ。</desc>
+  <defs>
+    <pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#d9dfd6"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 1 1 L 9 5 L 1 9" fill="none" stroke="#577f67" stroke-width="1.5"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: 'Noto Sans CJK JP', 'Noto Sans JP', 'Yu Gothic', 'Hiragino Sans', 'Meiryo', sans-serif; fill: #243d32; }
+    .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 2px; }
+    .label { font-size: 13px; }
+    .slot { fill: none; }
+  </style>
+  <rect width="1200" height="800" fill="#f6f5ef"/>
+  <circle cx="66" cy="52" r="9" fill="#dc6a44"/>
+  <text class="eyebrow" x="88" y="57">OPEN STUDIO / VISITOR GUIDE</text>
+  <rect id="heading_box" class="slot" x="56" y="81" width="880" height="60"/>
+  <rect id="subtitle_box" class="slot" x="58" y="151" width="850" height="29"/>
+  <rect x="984" y="45" width="160" height="106" rx="53" fill="#e5eadf"/>
+  <text x="1064" y="84" text-anchor="middle" font-size="13" letter-spacing="2">FLOOR</text>
+  <text x="1064" y="130" text-anchor="middle" font-size="42" font-weight="700">01</text>
+
+<!-- 動線・建築形状はSVG。各区画の文章は同じ座標系のHTMLで組版する。 -->
+  <rect x="44" y="208" width="792" height="518" rx="24" fill="#eaece3"/>
+  <rect x="44" y="208" width="792" height="518" rx="24" fill="url(#dots)"/>
+  <path d="M 70 419 V 230 H 812 V 704 H 70 V 495" fill="none" stroke="#a9b6a6" stroke-width="3"/>
+  <path d="M 70 456 H 420 V 284 M 420 456 H 790 M 420 456 V 649" fill="none" stroke="#577f67" stroke-width="2" stroke-dasharray="5 8" marker-end="url(#arrow)"/>
+  <circle cx="95" cy="456" r="9" fill="#dc6a44" stroke="#f6f5ef" stroke-width="4"/>
+  <text class="label" x="86" y="485">入口 / START</text>
+  <rect x="540" y="441" width="143" height="28" rx="14" fill="#eaece3"/>
+  <text class="label" x="611" y="460" text-anchor="middle">自由にめぐる →</text>
+
+  <g transform="translate(90 248)">
+    <rect width="284" height="157" rx="12" fill="#fffef9"/>
+    <text class="eyebrow" x="18" y="29">A / MATERIAL</text>
+    <rect id="room_0_status_box" x="172" y="12" width="96" height="27" rx="13.5" fill="#dcebdc"/>
+    <rect id="room_0_name_box" class="slot" x="18" y="49" width="248" height="32"/>
+    <rect id="room_0_description_box" class="slot" x="18" y="91" width="248" height="54"/>
+  </g>
+  <g transform="translate(466 248)">
+    <rect width="326" height="157" rx="12" fill="#fffef9"/>
+    <text class="eyebrow" x="18" y="29">B / SOUND</text>
+    <rect id="room_1_status_box" x="214" y="12" width="96" height="27" rx="13.5" fill="#dcebdc"/>
+    <rect id="room_1_name_box" class="slot" x="18" y="49" width="290" height="32"/>
+    <rect id="room_1_description_box" class="slot" x="18" y="91" width="290" height="54"/>
+  </g>
+  <g transform="translate(90 514)">
+    <rect width="284" height="168" rx="12" fill="#fffef9"/>
+    <text class="eyebrow" x="18" y="29">C / LIGHT</text>
+    <rect id="room_2_status_box" x="172" y="12" width="96" height="27" rx="13.5" fill="#dcebdc"/>
+    <rect id="room_2_name_box" class="slot" x="18" y="49" width="248" height="32"/>
+    <rect id="room_2_description_box" class="slot" x="18" y="91" width="248" height="63"/>
+  </g>
+  <g transform="translate(466 514)">
+    <rect width="326" height="168" rx="12" fill="#fffef9"/>
+    <text class="eyebrow" x="18" y="29">D / ATELIER</text>
+    <rect id="room_3_status_box" x="214" y="12" width="96" height="27" rx="13.5" fill="#dcebdc"/>
+    <rect id="room_3_name_box" class="slot" x="18" y="49" width="290" height="32"/>
+    <rect id="room_3_description_box" class="slot" x="18" y="91" width="290" height="63"/>
+  </g>
+
+  <rect x="862" y="208" width="294" height="338" rx="20" fill="#243d32"/>
+  <text class="eyebrow" x="886" y="242" style="fill:#b6cfbc">TODAY'S TALK</text>
+  <rect id="talk_time_box" class="slot" x="886" y="260" width="246" height="64"/>
+  <rect id="talk_title_box" class="slot" x="886" y="334" width="246" height="82"/>
+  <rect id="talk_description_box" class="slot" x="886" y="431" width="246" height="92"/>
+  <text class="eyebrow" x="872" y="584">YOUR PACE, YOUR ROUTE.</text>
+  <rect id="visitor_note_box" class="slot" x="872" y="603" width="274" height="75"/>
+  <circle cx="880" cy="711" r="5" fill="#577f67"/>
+  <text class="label" x="895" y="716">ゆったり</text>
+  <circle cx="993" cy="711" r="5" fill="#c98c39"/>
+  <text class="label" x="1008" y="716">待ち時間あり</text>
+  <path d="M 56 751 H 1144" stroke="#d6dccf"/>
+  <rect id="snapshot_box" class="slot" x="56" y="762" width="870" height="22"/>
+  <text x="1144" y="778" text-anchor="end" font-size="11">OPEN STUDIO · SAMPLE VENUE</text>
+</svg>
