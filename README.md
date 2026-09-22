@@ -8,9 +8,11 @@ SVGで作った固定レイアウトに、Pythonからテキスト、画像、
 レイアウトは使い慣れたSVGエディターで作成します。
 Pythonでは「どの枠に、どのデータを入れるか」だけを定義します。
 
-| 請求書 | イベントポスター | サービス構成図 |
+| 種類 | テンプレート | 結果 |
 | --- | --- | --- |
-| [<img src="examples/images/transaction_documents.png" alt="請求書の出力例" width="240">](examples/transaction_documents/output-invoice.svg) | [<img src="examples/images/event_poster.png" alt="イベントポスターの出力例" width="240">](examples/event_poster/output-event-poster.svg) | [<img src="examples/images/service_map.png" alt="サービス構成図の出力例" width="240">](examples/service_map/output-service-map.svg) |
+| 請求書 | [<img src="examples/images/transaction_documents-template.png" alt="請求書テンプレート" width="180">](examples/transaction_documents/template.svg) | [<img src="examples/images/transaction_documents.png" alt="請求書の生成結果" width="180">](examples/transaction_documents/output-invoice.svg) |
+| イベントポスター | [<img src="examples/images/event_poster-template.png" alt="イベントポスターテンプレート" width="180">](examples/event_poster/template.svg) | [<img src="examples/images/event_poster.png" alt="イベントポスターの生成結果" width="180">](examples/event_poster/output-event-poster.svg) |
+| サービス構成図 | [<img src="examples/images/service_map-template.png" alt="サービス構成図テンプレート" width="180">](examples/service_map/template.svg) | [<img src="examples/images/service_map.png" alt="サービス構成図の生成結果" width="180">](examples/service_map/output-service-map.svg) |
 
 レイアウトは使い慣れた SVG エディターで作り、Python では「どの枠に、どのデータを入れるか」だけを定義します。請求書、伝票、点検表、ポスターなど、枠の位置や数が決まっているレイアウトに向いています。
 
@@ -24,18 +26,6 @@ Pythonでは「どの枠に、どのデータを入れるか」だけを定義�
 - 実行時の外部ライブラリ依存なし
 
 SVG の図形を自動配置するライブラリではありません。レイアウトはテンプレート側で固定し、データの差し込みに専念します。
-
-## 必要環境とインストール
-
-- Python 3.13.x
-
-現在は PyPI では配布していません。リポジトリを取得し、そのディレクトリでインストールします。
-
-```bash
-python -m pip install .
-```
-
-Python パッケージ名とインポート名は `svgreportbuilder` です。
 
 ## クイックスタート
 
@@ -201,7 +191,7 @@ python -m examples.exhibition_map.render
 python -m examples.service_map.render
 ```
 
-冒頭のプレビュー画像は、生成済み SVG を Chromium で描画したものです。
+冒頭のプレビュー画像は、Chromium のヘッドレスモードでテンプレートと生成済み SVG を描画したものです。
 
 ## 表示環境と制約
 
@@ -229,19 +219,6 @@ python -m examples.service_map.render
 
 これらをまとめて処理する場合は、基底例外の `SvgRenderError` を捕捉できます。
 
-## コントリビューション
-
-バグ報告や改善提案を歓迎します。開発環境には [uv](https://docs.astral.sh/uv/) を使います。
-
-```bash
-uv sync
-uv run pytest
-uv run mypy
-uv run pyright
-```
-
-不具合を報告する際は、再現に必要な SVG、フィールド定義、入力データを添えてください。表示上の問題では、ブラウザー、変換ツール、フォントの情報もあると切り分けやすくなります。
-
 ## ライセンス
 
-現在、このリポジトリにはライセンスが設定されていません。OSS として公開する前に、利用条件に合うライセンスを選び `LICENSE` ファイルを追加してください。
+MIT License。詳細は [LICENSE](LICENSE) を参照してください。

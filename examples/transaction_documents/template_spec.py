@@ -20,6 +20,7 @@ TEXT = {
     "white-space": "pre-wrap",
     "overflow-wrap": "anywhere",
 }
+MONOSPACE = '"Noto Sans Mono CJK JP", monospace'
 SMALL = TEXT | {"font-size": "2.6px", "line-height": "1.35"}
 LABEL = SMALL | {"font-weight": "700"}
 TITLE = TEXT | {"font-size": "7px", "font-weight": "700", "line-height": "1.2"}
@@ -28,11 +29,15 @@ CENTER = TEXT | {
     "display": "flex", "align-items": "center", "justify-content": "center",
     "text-align": "center", "padding": "0.5px",
 }
-NUMBER = TEXT | {
-    "text-align": "right", "font-variant-numeric": "tabular-nums",
-    "white-space": "nowrap",
+NUMERIC = TEXT | {
+    "font-family": MONOSPACE, "font-variant-numeric": "tabular-nums",
 }
-IDENTIFIER = SMALL | {"font-family": '"Noto Sans Mono CJK JP", monospace', "white-space": "nowrap"}
+CENTER_NUMERIC = NUMERIC | {
+    "display": "flex", "align-items": "center", "justify-content": "center",
+    "text-align": "center", "padding": "0.5px",
+}
+NUMBER = NUMERIC | {"text-align": "right", "white-space": "nowrap"}
+IDENTIFIER = SMALL | {"font-family": MONOSPACE, "white-space": "nowrap"}
 AMOUNT = NUMBER | {"font-size": "4.8px", "font-weight": "700", "padding": "0.5px 1.5px"}
 
 
@@ -62,7 +67,7 @@ svg_report_template = SvgReportTemplate(
         _field("document_number_label_box", "document.number_label", LABEL),
         _field("document_number_box", "document.number", IDENTIFIER),
         _field("document_date_label_box", "document.date_label", LABEL),
-        _field("document_date_box", "document.date", CENTER),
+        _field("document_date_box", "document.date", CENTER_NUMERIC),
         _field("document_related_label_box", "document.related_label", LABEL),
         _field("document_related_box", "document.related_number", IDENTIFIER, default=""),
         _field("document_copy_box", "document.copy_label", SMALL, default=""),
@@ -73,8 +78,8 @@ svg_report_template = SvgReportTemplate(
         _field("document_readable_id_label_box", "document.readable_id_label", SMALL),
         _field("document_readable_id_box", "document.readable_id", IDENTIFIER),
         _field("page_label_box", "page.label", SMALL),
-        _field("page_current_box", "page.current", CENTER),
-        _field("page_total_box", "page.total", CENTER),
+        _field("page_current_box", "page.current", CENTER_NUMERIC),
+        _field("page_total_box", "page.total", CENTER_NUMERIC),
         _field("party_recipient_label_box", "party.recipient_label", LABEL),
         _field("party_recipient_name_box", "party.recipient_name", PARTY),
         _field("party_recipient_address_box", "party.recipient_address", TEXT),
@@ -85,9 +90,9 @@ svg_report_template = SvgReportTemplate(
         _field("summary_primary_label_box", "summary.primary_label", LABEL),
         _field("summary_primary_box", "summary.primary", AMOUNT),
         _field("summary_secondary_label_box", "summary.secondary_label", LABEL),
-        _field("summary_secondary_box", "summary.secondary", CENTER),
+        _field("summary_secondary_box", "summary.secondary", CENTER_NUMERIC),
         _field("summary_tertiary_label_box", "summary.tertiary_label", LABEL),
-        _field("summary_tertiary_box", "summary.tertiary", SMALL),
+        _field("summary_tertiary_box", "summary.tertiary", IDENTIFIER),
         _field("detail_heading_box", "detail.heading", LABEL),
         _field("detail_note_box", "detail.note", SMALL, default=""),
         _field("detail_header_no_box", "detail.headers.no", LABEL),
@@ -100,7 +105,7 @@ svg_report_template = SvgReportTemplate(
         FixedSlots(
             value_path="items", capacity=10, index="row",
             fields=[
-                _field("detail_item_{row}_no_box", "line_number", CENTER),
+                _field("detail_item_{row}_no_box", "line_number", CENTER_NUMERIC),
                 _field("detail_item_{row}_code_box", "code", IDENTIFIER, default=""),
                 _field("detail_item_{row}_description_box", "description", TEXT),
                 _field("detail_item_{row}_quantity_box", "quantity", NUMBER, default=""),

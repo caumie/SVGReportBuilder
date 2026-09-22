@@ -106,7 +106,7 @@ def document_data(kind: str) -> Data:
                 "recipient_address": "〒100-0001\n東京都千代田区千代田1-1",
                 "issuer_label": "発行者",
                 "issuer_name": "サンプルソリューション株式会社",
-                "issuer_address": "〒105-0001\n東京都港区1-2-3",
+                "issuer_address": "〒105-0001 東京都港区1-2-3",
                 "issuer_contact": "営業部　03-0000-0000",
             },
             "summary": {
@@ -134,7 +134,7 @@ def document_data(kind: str) -> Data:
             "party": {
                 "recipient_label": "発注先", "recipient_name": "東都オフィス株式会社 御中",
                 "recipient_address": "〒135-0001\n東京都江東区1-4-8", "issuer_label": "発注者",
-                "issuer_name": "サンプルソリューション株式会社", "issuer_address": "〒105-0001\n東京都港区1-2-3",
+                "issuer_name": "サンプルソリューション株式会社", "issuer_address": "〒105-0001 東京都港区1-2-3",
                 "issuer_contact": "購買担当　佐藤花子",
             },
             "summary": {
@@ -162,7 +162,7 @@ def document_data(kind: str) -> Data:
             "party": {
                 "recipient_label": "請求先", "recipient_name": "株式会社みらい産業 御中",
                 "recipient_address": "〒100-0001\n東京都千代田区千代田1-1", "issuer_label": "発行者",
-                "issuer_name": "サンプルソリューション株式会社", "issuer_address": "〒105-0001\n東京都港区1-2-3",
+                "issuer_name": "サンプルソリューション株式会社", "issuer_address": "〒105-0001 東京都港区1-2-3",
                 "issuer_contact": "経理部　03-0000-0000",
             },
             "summary": {
@@ -190,7 +190,7 @@ def document_data(kind: str) -> Data:
             "party": {
                 "recipient_label": "納入先", "recipient_name": "東都物流センター 御中",
                 "recipient_address": "〒135-0001\n東京都江東区1-4-8", "issuer_label": "納品者",
-                "issuer_name": "サンプルソリューション株式会社", "issuer_address": "〒105-0001\n東京都港区1-2-3",
+                "issuer_name": "サンプルソリューション株式会社", "issuer_address": "〒105-0001 東京都港区1-2-3",
                 "issuer_contact": "出荷担当　03-0000-0000",
             },
             "summary": {
