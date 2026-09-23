@@ -8,9 +8,42 @@ from collections.abc import Mapping
 from .models import SvgSpecError
 
 # 機能の塊: CSSは完全解釈せず、1値1宣言だけを許可する。
-# セミコロンを値に許可しないため、引用符・コメント・関数を解析する必要がない。
+# 宣言を分断するセミコロンとコメント区切りを値に許可しない。
 _PROPERTY_RE = re.compile(
     r"^(?:--[A-Za-z0-9_-]+|-[A-Za-z_][A-Za-z0-9_-]*|[A-Za-z_][A-Za-z0-9_-]*)$"
+)
+
+# データ由来のfill/strokeは単色だけを受理する。url()等の参照構文を
+# 汎用CSSとして解析する代わりに、許可する文法を限定する。
+_NUMBER = r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[Ee][+-]?\d+)?"
+_PERCENTAGE = rf"{_NUMBER}%"
+_RGB_COMPONENT = rf"(?:{_NUMBER}|{_PERCENTAGE})"
+_HUE = rf"{_NUMBER}(?:deg|grad|rad|turn)?"
+_ALPHA = _RGB_COMPONENT
+_SPACE = r"[ \t]*"
+_REQUIRED_SPACE = r"[ \t]+"
+
+
+def _function_pattern(first: str, second: str, third: str) -> str:
+    comma_values = (
+        rf"{first}{_SPACE},{_SPACE}{second}{_SPACE},{_SPACE}{third}"
+        rf"(?:{_SPACE},{_SPACE}{_ALPHA})?"
+    )
+    space_values = (
+        rf"{first}{_REQUIRED_SPACE}{second}{_REQUIRED_SPACE}{third}"
+        rf"(?:{_SPACE}/{_SPACE}{_ALPHA})?"
+    )
+    return rf"(?:{comma_values}|{space_values})"
+
+
+_RGB_FUNCTION = _function_pattern(_RGB_COMPONENT, _RGB_COMPONENT, _RGB_COMPONENT)
+_HSL_FUNCTION = _function_pattern(_HUE, _PERCENTAGE, _PERCENTAGE)
+_PAINT_RE = re.compile(
+    rf"(?:\#[0-9a-f]{{3}}|\#[0-9a-f]{{4}}|\#[0-9a-f]{{6}}|\#[0-9a-f]{{8}}"
+    rf"|[a-z]+|context-(?:fill|stroke)"
+    rf"|rgba?\({_SPACE}{_RGB_FUNCTION}{_SPACE}\)"
+    rf"|hsla?\({_SPACE}{_HSL_FUNCTION}{_SPACE}\))",
+    re.IGNORECASE,
 )
 
 
@@ -37,8 +70,21 @@ def validate_style(style: Mapping[str, str], name: str) -> None:
             raise SvgSpecError(f"{name} contains an invalid CSS property {key!r}")
         if ";" in value:
             raise SvgSpecError(f"{name} CSS values must not contain ';'")
+        if "/*" in value or "*/" in value:
+            raise SvgSpecError(f"{name} CSS values must not contain comments")
         _validate_xml_characters(key, f"{name} CSS property")
         _validate_xml_characters(value, f"{name} CSS value")
+
+
+def validate_paint(value: str, name: str) -> None:
+    """データ由来のfill/strokeを単色の字句文法で検証する。
+
+    16進色、英字の色キーワード、none等のキーワード、数値だけを引数に
+    持つrgb(a)/hsl(a)を許す。CSSの全ての色構文の解釈はしない。
+    """
+    validate_style({"fill": value}, name)
+    if not _PAINT_RE.fullmatch(value.strip()):
+        raise SvgSpecError(f"{name} paint must be a single color or paint keyword")
 
 
 def style_text(style: Mapping[str, str]) -> str:

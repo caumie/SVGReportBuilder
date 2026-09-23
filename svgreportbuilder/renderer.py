@@ -10,8 +10,9 @@ import xml.etree.ElementTree as ET
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from decimal import Decimal, InvalidOperation
+from typing import TypeAlias
 
-from .css import merged_style, style_text, validate_style
+from .css import merged_style, style_text, validate_paint, validate_style
 from .models import (
     UNSET,
     Data,
@@ -90,9 +91,12 @@ class _PathMissing(Exception):
 
 
 PathPart = str | int
+ArrayValidationKey: TypeAlias = tuple[tuple[PathPart, ...], int, int]
 
 
 def _parse_path(path: str, name: str) -> tuple[bool, tuple[str, ...]]:
+    if not isinstance(path, str):
+        raise SvgSpecError(f"{name} must be a string")
     if not path:
         raise SvgSpecError(f"{name} must not be empty")
     absolute = path.startswith("$.")
@@ -164,11 +168,21 @@ class _ExpandedField:
 
 
 @dataclass(frozen=True)
+class _SlotValidation:
+    slots: tuple[_SlotRef, ...]
+
+
+PreparedOperation: TypeAlias = _ExpandedField | _SlotValidation
+
+
+@dataclass(frozen=True)
 class PreparedReport:
-    fields: tuple[_ExpandedField, ...]
+    operations: tuple[PreparedOperation, ...]
 
 
 def _expand_target_id(target_id: str, bindings: Mapping[str, int], context: str) -> str:
+    if not isinstance(target_id, str):
+        raise SvgSpecError(f"{context} target_id must be a string")
     if not target_id:
         raise SvgSpecError(f"{context} target_id must not be empty")
     _validate_xml_characters(target_id, f"{context} target_id", SvgSpecError)
@@ -198,6 +212,9 @@ def _expand_target_id(target_id: str, bindings: Mapping[str, int], context: str)
 
 def _validate_field(field: FieldSpec, context: str) -> None:
     _parse_path(field.value_path, f"{context}.value_path")
+    for name in ("hide_target", "remove_stroke"):
+        if not isinstance(getattr(field, name), bool):
+            raise SvgSpecError(f"{context}.{name} must be a bool")
     for name in ("target_fill_path", "target_stroke_path"):
         value = getattr(field, name)
         if value is not None:
@@ -215,21 +232,26 @@ def _expand_definitions(
     slots: tuple[_SlotRef, ...],
     bindings: Mapping[str, int],
     location: str,
-) -> list[_ExpandedField]:
-    expanded: list[_ExpandedField] = []
+) -> list[PreparedOperation]:
+    expanded: list[PreparedOperation] = []
     for position, definition in enumerate(definitions):
         here = f"{location}.fields[{position}]"
         if isinstance(definition, FixedSlots):
-            if isinstance(definition.capacity, bool) or definition.capacity <= 0:
+            if (
+                not isinstance(definition.capacity, int)
+                or isinstance(definition.capacity, bool)
+                or definition.capacity <= 0
+            ):
                 raise SvgSpecError(f"{here}.capacity must be a positive integer")
             if (
-                isinstance(definition.min_items, bool)
+                not isinstance(definition.min_items, int)
+                or isinstance(definition.min_items, bool)
                 or not 0 <= definition.min_items <= definition.capacity
             ):
                 raise SvgSpecError(
                     f"{here}.min_items must be an integer between 0 and capacity"
                 )
-            if not _INDEX_RE.fullmatch(definition.index):
+            if not isinstance(definition.index, str) or not _INDEX_RE.fullmatch(definition.index):
                 raise SvgSpecError(f"{here}.index is not a valid index name")
             if definition.index in bindings:
                 raise SvgSpecError(
@@ -238,6 +260,22 @@ def _expand_definitions(
             array_path = _join_path(
                 context_path, definition.value_path, f"{here}.value_path"
             )
+            if not definition.fields:
+                expanded.append(
+                    _SlotValidation(
+                        slots=slots
+                        + (
+                            _SlotRef(
+                                array_path=array_path,
+                                index=0,
+                                capacity=definition.capacity,
+                                min_items=definition.min_items,
+                                description=f"{here} ({definition.value_path!r}, index 0)",
+                            ),
+                        )
+                    )
+                )
+                continue
             for index in range(definition.capacity):
                 slot = _SlotRef(
                     array_path=array_path,
@@ -273,6 +311,8 @@ def _expand_definitions(
                     f"{here} field function failed for index {slot_index}"
                 ) from error
             definition = generated
+        if not isinstance(definition, (TextField, ImageField)):
+            raise SvgSpecError(f"{here} must be a TextField, ImageField, or FixedSlots")
         _validate_field(definition, here)
         target_id = _expand_target_id(definition.target_id, bindings, here)
         field = replace(definition, target_id=target_id)
@@ -323,6 +363,8 @@ def _validate_length(value: str | None, target_id: str, name: str) -> None:
 
 
 def prepare_report(report: SvgReportTemplate) -> PreparedReport:
+    if not isinstance(report.svg, str):
+        raise SvgTemplateError("svg must be a string")
     try:
         root = ET.fromstring(report.svg)
     except ET.ParseError as error:
@@ -339,10 +381,14 @@ def prepare_report(report: SvgReportTemplate) -> PreparedReport:
     elements, parents = _index_template(root)
     target_ids: set[str] = set()
     for item in expanded:
+        if isinstance(item, _SlotValidation):
+            continue
         if item.field.target_id in target_ids:
             raise SvgSpecError(f"duplicate target_id {item.field.target_id!r}")
         target_ids.add(item.field.target_id)
     for item in expanded:
+        if isinstance(item, _SlotValidation):
+            continue
         field = item.field
         target = elements.get(field.target_id)
         if target is None:
@@ -398,13 +444,21 @@ def _validate_array(root: Data, slot: _SlotRef) -> Sequence[DataValue]:
     return value
 
 
-def _resolve_field_state(root: Data, item: _ExpandedField) -> bool:
+def _resolve_slot_state(
+    root: Data,
+    slots: tuple[_SlotRef, ...],
+    validated_lengths: dict[ArrayValidationKey, int],
+) -> bool:
     active = True
-    for slot in item.slots:
+    for slot in slots:
         if not active:
             break
-        values = _validate_array(root, slot)
-        if slot.index >= len(values):
+        key = (slot.array_path, slot.capacity, slot.min_items)
+        length = validated_lengths.get(key)
+        if length is None:
+            length = len(_validate_array(root, slot))
+            validated_lengths[key] = length
+        if slot.index >= length:
             active = False
     return active
 
@@ -442,7 +496,7 @@ def _target_paint_value(
             f"target {property_name} path {_path_text(target_path)!r} for {item.field.target_id!r} must resolve to a string or None"
         )
     try:
-        validate_style({property_name: value}, f"target {item.field.target_id!r}")
+        validate_paint(value, f"target {item.field.target_id!r}")
     except SvgSpecError as error:
         raise SvgDataError(
             f"target {property_name} value for {item.field.target_id!r} is not valid CSS"
@@ -451,7 +505,7 @@ def _target_paint_value(
 
 
 def _validated_mime_type(value: str, context: str) -> str:
-    if not _MIME_RE.fullmatch(value):
+    if not isinstance(value, str) or not _MIME_RE.fullmatch(value):
         raise SvgDataError(f"{context} image MIME type is invalid")
     _validate_xml_characters(value, f"{context} image MIME type", SvgDataError)
     return value
@@ -459,6 +513,8 @@ def _validated_mime_type(value: str, context: str) -> str:
 
 def _image_data_uri(source: ImageSource, *, context: str) -> str:
     mime_type = _validated_mime_type(source.mime_type, context)
+    if not isinstance(source.data, bytes):
+        raise SvgDataError(f"{context} image data must be bytes")
     return f"data:{mime_type};base64,{base64.b64encode(source.data).decode('ascii')}"
 
 
@@ -530,10 +586,17 @@ def render_report(report: SvgReportTemplate, data: Data) -> str:
     prepared = report.prepared
     root = ET.fromstring(report.svg)
     elements, parents = _index_template(root)
-    for item in prepared.fields:
+    validated_lengths: dict[ArrayValidationKey, int] = {}
+    generated_by_target: dict[ET.Element, ET.Element] = {}
+    affected_parents: set[ET.Element] = set()
+    for operation in prepared.operations:
+        if isinstance(operation, _SlotValidation):
+            _resolve_slot_state(data, operation.slots, validated_lengths)
+            continue
+        item = operation
         target = elements[item.field.target_id]
         parent = parents[target]
-        active = _resolve_field_state(data, item)
+        active = _resolve_slot_state(data, item.slots, validated_lengths)
         if item.field.hide_target:
             target.set("visibility", "hidden")
         target_paint: dict[str, str] = {}
@@ -554,7 +617,15 @@ def render_report(report: SvgReportTemplate, data: Data) -> str:
             if existing_style and not existing_style.endswith(";"):
                 existing_style += ";"
             target.set("style", existing_style + style_text(target_paint))
-        generated = _field_element(data, item, target, active)
-        parent.insert(list(parent).index(target) + 1, generated)
+        generated_by_target[target] = _field_element(data, item, target, active)
+        affected_parents.add(parent)
+    for parent in affected_parents:
+        children: list[ET.Element] = []
+        for child in parent:
+            children.append(child)
+            generated = generated_by_target.get(child)
+            if generated is not None:
+                children.append(generated)
+        parent[:] = children
     # XML整形の空白は、XHTMLのwhite-space指定によって表示内容になる。
     return ET.tostring(root, encoding="unicode", xml_declaration=False)

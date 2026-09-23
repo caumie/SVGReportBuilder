@@ -370,3 +370,133 @@ def test_fixed_slots_enforce_item_bounds_before_rendering() -> None:
         report.render({"items": []})
     with pytest.raises(SvgDataError, match="expected between 1 and 1"):
         report.render({"items": [{"name": "A"}, {"name": "B"}]})
+
+
+def test_generated_elements_follow_svg_order_across_parents() -> None:
+    svg = (
+        f'<svg xmlns="{SVG_NS}">\n'
+        '  <g id="first">\n'
+        '    <rect id="a" x="0" y="0" width="10" height="2"/>\n'
+        '    <circle id="keep" r="1"/>\n'
+        '    <rect id="b" x="0" y="3" width="10" height="2"/>\n'
+        '  </g>\n'
+        '  <g id="second">\n'
+        '    <rect id="c" x="0" y="0" width="10" height="2"/>\n'
+        '    <rect id="d" x="0" y="3" width="10" height="2"/>\n'
+        '  </g>\n'
+        '</svg>'
+    )
+    report = SvgReportTemplate(
+        svg=svg,
+        fields=[
+            TextField(value_path=target_id, target_id=target_id)
+            for target_id in ("d", "b", "c", "a")
+        ],
+    )
+
+    root = ET.fromstring(report.render(dict(a="A", b="B", c="C", d="D")))
+    first = _element(root, ".//*[@id='first']")
+    second = _element(root, ".//*[@id='second']")
+
+    def children(parent: ET.Element) -> list[tuple[str, str | None]]:
+        return [(child.tag.rsplit("}", 1)[-1], child.get("id")) for child in parent]
+
+    assert children(first) == [
+        ("rect", "a"),
+        ("foreignObject", None),
+        ("circle", "keep"),
+        ("rect", "b"),
+        ("foreignObject", None),
+    ]
+    assert children(second) == [
+        ("rect", "c"),
+        ("foreignObject", None),
+        ("rect", "d"),
+        ("foreignObject", None),
+    ]
+    assert first.text == second.text == "\n    "
+    assert [child.tail for child in first] == [
+        "\n    ", None, "\n    ", "\n  ", None
+    ]
+    assert [child.tail for child in second] == ["\n    ", None, "\n  ", None]
+    assert [
+        _element(child, f".//{{{XHTML_NS}}}div").text
+        for parent in (first, second)
+        for child in parent
+        if child.tag == f"{{{SVG_NS}}}foreignObject"
+    ] == ["A", "B", "C", "D"]
+
+
+@pytest.mark.parametrize(
+    ("names", "limits", "expected"),
+    [
+        (("A", "B"), ((2, 0), (1, 0)), "expected between 0 and 1"),
+        ((), ((2, 0), (2, 1)), "expected between 1 and 2"),
+    ],
+)
+def test_same_array_path_respects_each_slot_constraint(
+    names: tuple[str, ...],
+    limits: tuple[tuple[int, int], tuple[int, int]],
+    expected: str,
+) -> None:
+    report = SvgReportTemplate(
+        svg=_svg(
+            *(
+                f"group_{group}_{row}"
+                for group, (capacity, _) in enumerate(limits)
+                for row in range(capacity)
+            )
+        ),
+        fields=[
+            FixedSlots(
+                value_path="items",
+                capacity=capacity,
+                min_items=min_items,
+                index="row",
+                fields=[
+                    TextField(value_path="name", target_id=f"group_{group}_{{row}}")
+                ],
+            )
+            for group, (capacity, min_items) in enumerate(limits)
+        ],
+    )
+    with pytest.raises(SvgDataError, match=expected):
+        report.render({"items": [{"name": name} for name in names]})
+
+
+def test_nested_slots_skip_absent_parent_and_reset_between_renders() -> None:
+    report = SvgReportTemplate(
+        svg=_svg(
+            "group_0_item_0",
+            "group_0_item_1",
+            "group_1_item_0",
+            "group_1_item_1",
+        ),
+        fields=[
+            FixedSlots(
+                value_path="groups",
+                capacity=2,
+                index="group",
+                fields=[
+                    FixedSlots(
+                        value_path="items",
+                        capacity=2,
+                        index="row",
+                        fields=[
+                            TextField(
+                                value_path="name",
+                                target_id="group_{group}_item_{row}",
+                            )
+                        ],
+                    )
+                ],
+            )
+        ],
+    )
+
+    first = report.render({"groups": [{"items": [{"name": "A"}]}]})
+    second = report.render(
+        {"groups": [{"items": []}, {"items": [{"name": "B"}, {"name": "C"}]}]}
+    )
+    assert [div.text for div in _divs(first)] == ["A", None, None, None]
+    assert [div.text for div in _divs(second)] == [None, None, "B", "C"]
