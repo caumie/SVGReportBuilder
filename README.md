@@ -84,23 +84,29 @@ Path("output.svg").write_text(output_svg, encoding="utf-8")
 `FixedSlots` は、配列の要素をテンプレートに用意した枠へ順番に割り当てます。
 
 ```python
-from svgreportbuilder import FixedSlots, TextField
+from svgreportbuilder import FieldFactory, FixedSlots, TextField
+
+def item_name_field(row: int) -> TextField:
+    return TextField(
+        target_id=f"item_{row}_name_box",
+        value_path="name",
+        container_style={"font-size": "14px", "padding": "4px"},
+    )
+
+item_factory: FieldFactory = item_name_field
 
 items_field = FixedSlots(
     value_path="items",
     capacity=5,
     index="row",
-    fields=[
-        TextField(
-            target_id="item_{row}_name_box",
-            value_path="name",
-            container_style={"font-size": "14px", "padding": "4px"},
-        ),
-    ],
+    min_items=1,
+    fields=[item_factory],
 )
 ```
 
-テンプレートには `item_0_name_box` から `item_4_name_box` までの `rect` を用意します。データ件数が `capacity` を超えると `SvgDataError` になります。空き枠は空欄のまま残ります。
+テンプレートには `item_0_name_box` から `item_4_name_box` までの `rect` を用意します。`min_items` は配列の最小件数で、省略時は `0` です。配列の件数は `min_items` 以上 `capacity` 以下である必要があり、範囲外や参照先の欠損は `SvgDataError` になります。未使用の枠は空欄のまま残ります。
+
+`FieldFactory` は `Callable[[int], TextField | ImageField]` の公開型エイリアスです。`FixedSlots.fields` に渡すと、各枠の0始まりの番号を受け取り、その枠で使うフィールド定義を返します。関数はテンプレート構築時に枠ごとに1回呼ばれ、同期関数のみ使用できます。データを受け取るのは `render(data)` なので、ファクトリーは枠番号だけでフィールド定義を決めます。単純にIDへ番号を埋め込む場合は、`target_id="item_{row}_name_box"` のようなプレースホルダーも使えます。
 
 ### 画像を埋め込む
 
@@ -129,6 +135,7 @@ data = {
 ```
 
 画像は既定で縦横比を保ったまま枠内に収まります。PNG のほか、`mime_type="image/svg+xml"` として SVG 画像も渡せます。
+MIME タイプは `image/` 型に限ります。バイト列と MIME タイプの一致や、画像として復号できるかどうかは検証しません。
 
 ### データを参照する
 
@@ -155,7 +162,9 @@ data = {
 
 `target_fill_path` と `target_stroke_path` を使うと、データから対象 `rect` の背景色と枠線色を変更できます。`hide_target=True` は元の `rect` を隠し、`remove_stroke=True` は枠線だけを非表示にします。
 
-データから指定する色は、16進色、英字の色キーワード、`none` などのキーワード、数値だけを引数に持つ `rgb()` / `rgba()` / `hsl()` / `hsla()` に限ります。`url()` による外部・内部参照、`var()`、グラデーションなどは受け付けません。上記の CSS スタイル辞書は作者が管理する設定として扱い、外部から受け取った値をそのまま渡さないでください。
+データから指定する色は、16進色、英字のみのキーワード形式（例: `red`、`transparent`、`currentColor`、`none`）、数値だけを引数に持つ `rgb()` / `rgba()` / `hsl()` / `hsla()` に限ります。キーワードが実在する色名かどうかはブラウザーが判断します。データ由来の色にはグラデーションを使えません。
+
+CSS スタイル辞書では色・計算・グラデーション・変形などの指定済み関数を使えます。外部リソースを参照できる `url()`、`image-set()` や、参照先によって動作が変わる `var()`、`attr()`、`@import`、CSS エスケープは受け付けません。スタイル辞書は作者が管理する設定として扱い、外部から受け取った値をそのまま渡さないでください。
 
 ## テンプレートの要件
 
@@ -166,6 +175,7 @@ data = {
 - SVG 内の ID とフィールドの差し込み先を重複させない
 - 対象 `rect` 自身には `transform` を指定しない
 - `defs` などの非表示定義内に差し込み先を置かない
+- 差し込み先 `rect` の祖先要素は `svg`、`g`、`a` に限る（`metadata`、`defs`、`switch` などの内側は不可）
 
 対象枠の直後に同じ領域の `foreignObject` を追加し、その中に XHTML を生成します。元の枠は残るため、必要に応じてテンプレートで `fill="none"` や `stroke="none"` を指定してください。
 

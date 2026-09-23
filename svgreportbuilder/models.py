@@ -6,7 +6,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from enum import Enum
 from types import MappingProxyType
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, TypeAlias, cast
 
 if TYPE_CHECKING:
     from .renderer import PreparedReport
@@ -64,6 +64,8 @@ Data: TypeAlias = Mapping[str, DataValue]
 
 # 機能の塊: styleは入力辞書をスナップショット化してから保持する。
 def _style_snapshot(style: Mapping[str, str]) -> Mapping[str, str]:
+    if not isinstance(cast(object, style), Mapping):
+        raise SvgSpecError("style must be a mapping")
     return MappingProxyType(dict(style))
 
 
@@ -131,6 +133,10 @@ class FixedSlots:
     min_items: int = 0
 
     def __post_init__(self) -> None:
+        if not isinstance(cast(object, self.fields), Sequence) or isinstance(
+            cast(object, self.fields), (str, bytes, bytearray)
+        ):
+            raise SvgSpecError("FixedSlots.fields must be a sequence")
         try:
             fields = tuple(self.fields)
         except TypeError as error:
@@ -151,6 +157,10 @@ class SvgReportTemplate:
     prepared: PreparedReport = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
+        if not isinstance(cast(object, self.fields), Sequence) or isinstance(
+            cast(object, self.fields), (str, bytes, bytearray)
+        ):
+            raise SvgSpecError("SvgReportTemplate.fields must be a sequence")
         try:
             fields = tuple(self.fields)
         except TypeError as error:

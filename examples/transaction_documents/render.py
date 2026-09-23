@@ -138,7 +138,7 @@ def document_data(kind: str) -> Data:
                 "issuer_contact": "購買担当　佐藤花子",
             },
             "summary": {
-                "primary_label": profile["primary_label"], "primary": "220,000円",
+                "primary_label": profile["primary_label"], "primary": "242,000円",
                 "secondary_label": profile["secondary_label"], "secondary": "2026年10月2日",
                 "tertiary_label": profile["tertiary_label"], "tertiary": "PJ-2026-14",
             },

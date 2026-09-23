@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from decimal import Decimal, InvalidOperation
-from typing import TypeAlias
+from typing import TypeAlias, cast
 
 from .css import merged_style, style_text, validate_paint, validate_style
 from .models import (
@@ -33,13 +33,10 @@ from .models import (
 SVG_NS = "http://www.w3.org/2000/svg"
 XHTML_NS = "http://www.w3.org/1999/xhtml"
 _LENGTH_RE = re.compile(r"^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:cm|mm|in|pt|pc|px)?$")
-_MIME_RE = re.compile(
-    r"^[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*$"
-)
+_MIME_RE = re.compile(r"^image/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*$", re.IGNORECASE)
 _INDEX_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-_DEFINITION_ANCESTORS = frozenset(
-    f"{{{SVG_NS}}}{name}"
-    for name in ("defs", "symbol", "clipPath", "mask", "pattern", "marker")
+_RENDERED_ANCESTORS = frozenset(
+    f"{{{SVG_NS}}}{name}" for name in ("svg", "g", "a")
 )
 
 ET.register_namespace("", SVG_NS)
@@ -95,7 +92,7 @@ ArrayValidationKey: TypeAlias = tuple[tuple[PathPart, ...], int, int]
 
 
 def _parse_path(path: str, name: str) -> tuple[bool, tuple[str, ...]]:
-    if not isinstance(path, str):
+    if not isinstance(cast(object, path), str):
         raise SvgSpecError(f"{name} must be a string")
     if not path:
         raise SvgSpecError(f"{name} must not be empty")
@@ -181,7 +178,7 @@ class PreparedReport:
 
 
 def _expand_target_id(target_id: str, bindings: Mapping[str, int], context: str) -> str:
-    if not isinstance(target_id, str):
+    if not isinstance(cast(object, target_id), str):
         raise SvgSpecError(f"{context} target_id must be a string")
     if not target_id:
         raise SvgSpecError(f"{context} target_id must not be empty")
@@ -238,20 +235,22 @@ def _expand_definitions(
         here = f"{location}.fields[{position}]"
         if isinstance(definition, FixedSlots):
             if (
-                not isinstance(definition.capacity, int)
+                not isinstance(cast(object, definition.capacity), int)
                 or isinstance(definition.capacity, bool)
                 or definition.capacity <= 0
             ):
                 raise SvgSpecError(f"{here}.capacity must be a positive integer")
             if (
-                not isinstance(definition.min_items, int)
+                not isinstance(cast(object, definition.min_items), int)
                 or isinstance(definition.min_items, bool)
                 or not 0 <= definition.min_items <= definition.capacity
             ):
                 raise SvgSpecError(
                     f"{here}.min_items must be an integer between 0 and capacity"
                 )
-            if not isinstance(definition.index, str) or not _INDEX_RE.fullmatch(definition.index):
+            if not isinstance(cast(object, definition.index), str) or not _INDEX_RE.fullmatch(
+                definition.index
+            ):
                 raise SvgSpecError(f"{here}.index is not a valid index name")
             if definition.index in bindings:
                 raise SvgSpecError(
@@ -311,7 +310,7 @@ def _expand_definitions(
                     f"{here} field function failed for index {slot_index}"
                 ) from error
             definition = generated
-        if not isinstance(definition, (TextField, ImageField)):
+        if not isinstance(cast(object, definition), (TextField, ImageField)):
             raise SvgSpecError(f"{here} must be a TextField, ImageField, or FixedSlots")
         _validate_field(definition, here)
         target_id = _expand_target_id(definition.target_id, bindings, here)
@@ -363,7 +362,7 @@ def _validate_length(value: str | None, target_id: str, name: str) -> None:
 
 
 def prepare_report(report: SvgReportTemplate) -> PreparedReport:
-    if not isinstance(report.svg, str):
+    if not isinstance(cast(object, report.svg), str):
         raise SvgTemplateError("svg must be a string")
     try:
         root = ET.fromstring(report.svg)
@@ -411,10 +410,11 @@ def prepare_report(report: SvgReportTemplate) -> PreparedReport:
         for name in ("x", "y", "width", "height"):
             _validate_length(target.get(name), field.target_id, name)
         ancestor = parents.get(target)
-        while ancestor is not None and ancestor.tag != _svg_tag("svg"):
-            if ancestor.tag in _DEFINITION_ANCESTORS:
+        while ancestor is not None:
+            if ancestor.tag not in _RENDERED_ANCESTORS:
                 raise SvgTemplateError(
-                    f"target id {field.target_id!r} is inside a non-rendered SVG definition"
+                    f"target id {field.target_id!r} is inside a non-rendered "
+                    "or unsupported SVG container"
                 )
             ancestor = parents.get(ancestor)
     return PreparedReport(tuple(expanded))
@@ -505,7 +505,7 @@ def _target_paint_value(
 
 
 def _validated_mime_type(value: str, context: str) -> str:
-    if not isinstance(value, str) or not _MIME_RE.fullmatch(value):
+    if not isinstance(cast(object, value), str) or not _MIME_RE.fullmatch(value):
         raise SvgDataError(f"{context} image MIME type is invalid")
     _validate_xml_characters(value, f"{context} image MIME type", SvgDataError)
     return value
@@ -513,7 +513,7 @@ def _validated_mime_type(value: str, context: str) -> str:
 
 def _image_data_uri(source: ImageSource, *, context: str) -> str:
     mime_type = _validated_mime_type(source.mime_type, context)
-    if not isinstance(source.data, bytes):
+    if not isinstance(cast(object, source.data), bytes):
         raise SvgDataError(f"{context} image data must be bytes")
     return f"data:{mime_type};base64,{base64.b64encode(source.data).decode('ascii')}"
 
@@ -583,6 +583,8 @@ def _field_element(
 
 
 def render_report(report: SvgReportTemplate, data: Data) -> str:
+    if not isinstance(cast(object, data), Mapping):
+        raise SvgDataError("data must be a mapping")
     prepared = report.prepared
     root = ET.fromstring(report.svg)
     elements, parents = _index_template(root)

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import re
+import string
 from collections.abc import Mapping
+from typing import cast
 
 from .models import SvgSpecError
 
@@ -11,6 +13,25 @@ from .models import SvgSpecError
 # 宣言を分断するセミコロンとコメント区切りを値に許可しない。
 _PROPERTY_RE = re.compile(
     r"^(?:--[A-Za-z0-9_-]+|-[A-Za-z_][A-Za-z0-9_-]*|[A-Za-z_][A-Za-z0-9_-]*)$"
+)
+_CSS_NAME_CHARS = frozenset(string.ascii_letters + string.digits + "_-")
+# 任意の関数を通すとurl()やimage-set()からリソースを読めるため、
+# 外部参照を持たない関数だけを列挙する。関数内の関数も同じ規則で検査する。
+_ALLOWED_STYLE_FUNCTIONS = frozenset(
+    {
+        "rgb", "rgba", "hsl", "hsla", "hwb", "lab", "lch", "oklab", "oklch",
+        "color", "color-mix", "calc", "min", "max", "clamp",
+        "linear-gradient", "repeating-linear-gradient",
+        "radial-gradient", "repeating-radial-gradient",
+        "conic-gradient", "repeating-conic-gradient",
+        "matrix", "matrix3d", "translate", "translatex", "translatey",
+        "translatez", "translate3d", "rotate", "rotatex", "rotatey",
+        "rotatez", "rotate3d", "scale", "scalex", "scaley", "scalez",
+        "scale3d", "skew", "skewx", "skewy", "perspective",
+        "blur", "brightness", "contrast", "grayscale", "hue-rotate",
+        "invert", "opacity", "saturate", "sepia", "drop-shadow",
+        "cubic-bezier", "steps",
+    }
 )
 
 # データ由来のfill/strokeは単色だけを受理する。url()等の参照構文を
@@ -38,6 +59,7 @@ def _function_pattern(first: str, second: str, third: str) -> str:
 
 _RGB_FUNCTION = _function_pattern(_RGB_COMPONENT, _RGB_COMPONENT, _RGB_COMPONENT)
 _HSL_FUNCTION = _function_pattern(_HUE, _PERCENTAGE, _PERCENTAGE)
+_MAX_PAINT_LENGTH = 256
 _PAINT_RE = re.compile(
     rf"(?:\#[0-9a-f]{{3}}|\#[0-9a-f]{{4}}|\#[0-9a-f]{{6}}|\#[0-9a-f]{{8}}"
     rf"|[a-z]+|context-(?:fill|stroke)"
@@ -63,17 +85,55 @@ def _validate_xml_characters(value: str, context: str) -> None:
             )
 
 
+def _validate_css_functions(value: str, name: str) -> None:
+    """引用文字列を除く括弧を走査し、許可した関数だけを通す。"""
+    quote: str | None = None
+    depth = 0
+    for index, character in enumerate(value):
+        if quote is not None:
+            if character == quote:
+                quote = None
+            continue
+        if character in ('"', "'"):
+            quote = character
+        elif character == "(":
+            start = index
+            while start > 0 and value[start - 1] in _CSS_NAME_CHARS:
+                start -= 1
+            function_name = value[start:index].lower()
+            if function_name not in _ALLOWED_STYLE_FUNCTIONS:
+                raise SvgSpecError(
+                    f"{name} CSS function {function_name!r} is not allowed"
+                )
+            depth += 1
+        elif character == ")":
+            depth -= 1
+            if depth < 0:
+                raise SvgSpecError(f"{name} CSS values have an unmatched ')'")
+    if quote is not None or depth != 0:
+        raise SvgSpecError(f"{name} CSS values have an unclosed quote or function")
+
+
 def validate_style(style: Mapping[str, str], name: str) -> None:
     """style辞書を検証する。既存SVGのstyle属性は解析しない。"""
     for key, value in style.items():
+        if not isinstance(cast(object, key), str):
+            raise SvgSpecError(f"{name} CSS property names must be strings")
         if not _PROPERTY_RE.fullmatch(key):
             raise SvgSpecError(f"{name} contains an invalid CSS property {key!r}")
+        if not isinstance(cast(object, value), str):
+            raise SvgSpecError(f"{name} CSS values must be strings")
         if ";" in value:
             raise SvgSpecError(f"{name} CSS values must not contain ';'")
         if "/*" in value or "*/" in value:
             raise SvgSpecError(f"{name} CSS values must not contain comments")
+        if "@" in value:
+            raise SvgSpecError(f"{name} CSS values must not contain at-rules")
+        if "\\" in value:
+            raise SvgSpecError(f"{name} CSS values must not contain escapes")
         _validate_xml_characters(key, f"{name} CSS property")
         _validate_xml_characters(value, f"{name} CSS value")
+        _validate_css_functions(value, name)
 
 
 def validate_paint(value: str, name: str) -> None:
@@ -83,7 +143,7 @@ def validate_paint(value: str, name: str) -> None:
     持つrgb(a)/hsl(a)を許す。CSSの全ての色構文の解釈はしない。
     """
     validate_style({"fill": value}, name)
-    if not _PAINT_RE.fullmatch(value.strip()):
+    if len(value) > _MAX_PAINT_LENGTH or not _PAINT_RE.fullmatch(value.strip()):
         raise SvgSpecError(f"{name} paint must be a single color or paint keyword")
 
 
