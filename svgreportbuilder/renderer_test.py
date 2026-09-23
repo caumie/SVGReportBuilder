@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
+from types import MappingProxyType
 
 import pytest
 
 from svgreportbuilder import (
+    Data,
+    DataValue,
     FixedSlots,
     ImageField,
     ImageSource,
@@ -41,6 +44,64 @@ def _foreign_object(root: ET.Element, target_id: str) -> ET.Element:
     target = _element(root, f".//*[@id='{target_id}']")
     parent = next(parent for parent in root.iter() if target in list(parent))
     return list(parent)[list(parent).index(target) + 1]
+
+
+def test_render_uses_nested_snapshot_after_copying(monkeypatch: pytest.MonkeyPatch) -> None:
+    item: dict[str, str] = {"name": "before"}
+    items: list[DataValue] = [item]
+    appearance = {"fill": "red"}
+    data: Data = {"items": items, "appearance": appearance}
+    report = SvgReportTemplate(
+        svg=_svg("item_0"),
+        fields=[
+            FixedSlots(
+                value_path="items",
+                capacity=1,
+                index="row",
+                fields=[
+                    TextField(
+                        target_id="item_{row}",
+                        value_path="name",
+                        target_fill_path="$.appearance.fill",
+                    )
+                ],
+            )
+        ],
+    )
+    parse_svg = ET.fromstring
+
+    def change_original_data(svg: str) -> ET.Element:
+        item["name"] = "after"
+        items.clear()
+        appearance["fill"] = "blue"
+        return parse_svg(svg)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(ET, "fromstring", change_original_data)
+        output = report.render(data)
+
+    assert _divs(output)[0].text == "before"
+    root = ET.fromstring(output)
+    assert _element(root, ".//*[@id='item_0']").get("style") == "fill:red;"
+
+    items.append(item)
+    second = report.render(data)
+    assert _divs(second)[0].text == "after"
+    root = ET.fromstring(second)
+    assert _element(root, ".//*[@id='item_0']").get("style") == "fill:blue;"
+
+
+def test_render_reports_uncopyable_mappings() -> None:
+    report = SvgReportTemplate(
+        svg=_svg("value"),
+        fields=[TextField(target_id="value", value_path="nested.value")],
+    )
+    data: Data = MappingProxyType(
+        {"nested": MappingProxyType({"value": "A"})}
+    )
+
+    with pytest.raises(SvgDataError, match="could not be deep-copied"):
+        report.render(data)
 
 
 def test_report_template_uses_fixed_slots_and_data_paint_paths() -> None:

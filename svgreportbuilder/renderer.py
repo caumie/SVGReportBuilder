@@ -8,6 +8,7 @@ import re
 import string
 import xml.etree.ElementTree as ET
 from collections.abc import Mapping, Sequence
+from copy import deepcopy
 from dataclasses import dataclass, replace
 from decimal import Decimal, InvalidOperation
 from typing import TypeAlias, cast
@@ -585,6 +586,12 @@ def _field_element(
 def render_report(report: SvgReportTemplate, data: Data) -> str:
     if not isinstance(cast(object, data), Mapping):
         raise SvgDataError("data must be a mapping")
+    try:
+        data = deepcopy(data)
+    except MemoryError:
+        raise
+    except Exception as error:
+        raise SvgDataError("data could not be deep-copied") from error
     prepared = report.prepared
     root = ET.fromstring(report.svg)
     elements, parents = _index_template(root)
